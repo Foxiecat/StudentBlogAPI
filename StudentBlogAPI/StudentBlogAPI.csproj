@@ -16,7 +16,6 @@
 
     <ItemGroup>
       <Folder Include="Configuration\Authentication\" />
-      <Folder Include="Configuration\Database\Setup\" />
       <Folder Include="Features\Base\Interfaces\" />
       <Folder Include="Features\Users\Controllers\" />
       <Folder Include="Features\Users\Interfaces\" />
