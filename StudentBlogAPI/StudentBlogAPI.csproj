@@ -8,11 +8,21 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MySql.Data" Version="9.1.0" />
+        <PackageReference Include="Serilog" Version="4.1.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
+      <Folder Include="Configuration\Authentication\" />
+      <Folder Include="Configuration\Database\Setup\" />
+      <Folder Include="Features\Base\Interfaces\" />
+      <Folder Include="Features\Users\Controllers\" />
+      <Folder Include="Features\Users\Interfaces\" />
+      <Folder Include="Features\Users\Services\" />
+      <Folder Include="Logs\" />
+      <Folder Include="Middleware\" />
     </ItemGroup>
 
 </Project>
