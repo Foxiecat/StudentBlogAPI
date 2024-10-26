@@ -1,14 +1,35 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using StudentBlogAPI.Configuration.Authentication;
+using StudentBlogAPI.Configuration.Database;
+using StudentBlogAPI.Extensions;
+using StudentBlogAPI.Features.Users;
+using StudentBlogAPI.Features.Users.Interfaces;
+using StudentBlogAPI.Middleware;
 
-// Add services to the container.
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services
+    .AddScoped<IUserService, UserService>();
 
-var app = builder.Build();
+builder.Services
+    .AddScoped<BasicAuthentication>()
+    .Configure<BasicAuthenticationOptions>(builder.Configuration.GetSection("BasicAuthenticationOptions"));
+
+// Database connection
+builder.Services.AddDbContext<StudentBlogDbContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        new MySqlServerVersion(new Version(8,4,2))));
+
+
+builder.Services
+    .AddHttpContextAccessor()
+    .AddEndpointsApiExplorer()
+    .AddSwaggerBasicAuthentication();
+
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -17,9 +38,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
+app.UseHttpsRedirection()
+    .UseMiddleware<BasicAuthentication>()
+    .UseAuthorization();
 
 app.MapControllers();
 
