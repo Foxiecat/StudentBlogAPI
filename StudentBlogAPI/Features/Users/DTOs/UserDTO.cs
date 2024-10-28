@@ -1,4 +1,4 @@
-namespace StudentBlogAPI.Features.Users.Models;
+namespace StudentBlogAPI.Features.Users.DTOs;
 
 public class UserDTO
 {
@@ -8,5 +8,5 @@ public class UserDTO
     public string LastName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public DateTime Created { get; init; }
-    public DateTime Updated { get; init; }
+    public DateTime? Updated { get; init; }
 }

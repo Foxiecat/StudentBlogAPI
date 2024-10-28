@@ -5,21 +5,6 @@ namespace StudentBlogAPI.Extensions;
 
 public static class ServiceCollectionExtension
 {
-    public static void AddSwaggerWithBearerAuthentication(this IServiceCollection services)
-    {
-        services.AddSwaggerGen(swaggerGenOptions =>
-        {
-            swaggerGenOptions.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-            {
-                In = ParameterLocation.Header,
-                Name = "Authorization",
-                Type = SecuritySchemeType.ApiKey,
-            });
-            
-            swaggerGenOptions.OperationFilter<SecurityRequirementsOperationFilter>();
-        });
-    }
-
     public static void AddSwaggerBasicAuthentication(this IServiceCollection services)
     {
         services.AddSwaggerGen(swaggerGenOptions =>
@@ -50,9 +35,9 @@ public static class ServiceCollectionExtension
             
             swaggerGenOptions.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
             {
-                In = ParameterLocation.Header,
                 Name = "Authorization",
                 Type = SecuritySchemeType.ApiKey,
+                In = ParameterLocation.Header
             });
             
             swaggerGenOptions.OperationFilter<SecurityRequirementsOperationFilter>();

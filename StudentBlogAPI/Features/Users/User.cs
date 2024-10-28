@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using StudentBlogAPI.Features.Comments.Models;
-using StudentBlogAPI.Features.Posts.Models;
+using System.Runtime.InteropServices;
+using StudentBlogAPI.Features.Comments;
+using StudentBlogAPI.Features.Posts;
 
-namespace StudentBlogAPI.Features.Users.Models;
+namespace StudentBlogAPI.Features.Users;
 
 public class User
 {
@@ -11,18 +12,19 @@ public class User
     
     [Required]
     [MinLength(3), MaxLength(30)]
-    public string UserName { get; set; } = string.Empty;
+    public string UserName { get; init; } = string.Empty;
     
     [Required]
     [MinLength(2), MaxLength(50)]
     public string FirstName { get; set; } = string.Empty;
     
     [Required]
-    [MinLength(2), MaxLength(50)]
+    [MinLength(2), MaxLength(100)]
     public string LastName { get; set; } = string.Empty;
     
     [Required]
     [EmailAddress]
+    [MaxLength(255)]
     public string Email { get; set; } = string.Empty;
     
     [Required]
@@ -30,9 +32,7 @@ public class User
     
     [Required]
     public DateTime Created { get; set; }
-    
-    [Required]
-    public DateTime Updated { get; set; }
+    public DateTime? Updated { get; set; }
     
     [Required]
     public bool IsAdminUser { get; set; }

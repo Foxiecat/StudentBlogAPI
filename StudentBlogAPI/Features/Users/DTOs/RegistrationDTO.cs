@@ -1,6 +1,6 @@
-namespace StudentBlogAPI.Features.Users.Models;
+namespace StudentBlogAPI.Features.Users.DTOs;
 
-public class UserRegistrationDTO
+public class RegistrationDTO
 {
     public string? UserName { get; set; }
     public string? FirstName { get; set; }

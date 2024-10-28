@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace StudentBlogAPI.Features.Base.Interfaces;
+namespace StudentBlogAPI.Common.Interfaces;
 
 public interface IRepository<T> where T : class
 {

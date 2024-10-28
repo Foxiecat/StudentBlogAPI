@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using StudentBlogAPI.Features.Posts.Models;
-using StudentBlogAPI.Features.Users.Models;
+using StudentBlogAPI.Features.Posts;
+using StudentBlogAPI.Features.Users;
 
-namespace StudentBlogAPI.Features.Comments.Models;
+namespace StudentBlogAPI.Features.Comments;
 
 public class Comment
 {

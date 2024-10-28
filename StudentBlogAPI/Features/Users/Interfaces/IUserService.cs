@@ -1,11 +1,11 @@
-using StudentBlogAPI.Features.Base.Interfaces;
-using StudentBlogAPI.Features.Users.Models;
+using StudentBlogAPI.Features.Common.Interfaces;
+using StudentBlogAPI.Features.Users.DTOs;
 
 namespace StudentBlogAPI.Features.Users.Interfaces;
 
 public interface IUserService : IService<UserDTO>
 {
-    Task<UserDTO?> RegisterAsync(UserRegistrationDTO registrationDTO);
+    Task<UserDTO?> RegisterAsync(RegistrationDTO registrationDTO);
     Task<Guid> AuthenticateUserAsync(string userName, string password);
     Task<IEnumerable<UserDTO>> FindAsync(UserSearchParameters searchParameters);
 }

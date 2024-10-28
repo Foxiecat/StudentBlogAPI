@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
-using StudentBlogAPI.Configuration.Authentication;
+using StudentBlogAPI.Auth;
 using StudentBlogAPI.Features.Users.Interfaces;
 
 namespace StudentBlogAPI.Middleware;
@@ -20,17 +20,22 @@ public class BasicAuthentication : IMiddleware
         _logger = logger;
         _userService = userService;
         
-        _excludePatterns = options.Value.ExcludePatterns.Select(pattern => new Regex(pattern)).ToList();
+        _excludePatterns = options.Value.ExcludePatterns
+            .Select(pattern => new Regex(pattern)).ToList();
     }
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        if (_excludePatterns.Any(regex => regex.IsMatch(context.Request.Path)))
+        string authenticationHeader = context.Request.Headers.Authorization.ToString();
+
+        if (_excludePatterns.Any(excludePattern => excludePattern.IsMatch(context.Request.Path)))
         {
             await next(context);
+            return;
         }
         
-        string authenticationHeader = context.Request.Headers["Authorization"].ToString();
+        
+        // Checks Authentication Header:
         if (string.IsNullOrWhiteSpace(authenticationHeader))
         {
             _logger.LogWarning("Authentication header is missing.");
@@ -49,6 +54,7 @@ public class BasicAuthentication : IMiddleware
             _logger.LogWarning("Authentication header is empty");
             throw new UnauthorizedAccessException("Authentication header is empty.");
         }
+        
         
         // Decode base64-string to username and password
         string userName, password;
@@ -69,6 +75,8 @@ public class BasicAuthentication : IMiddleware
             throw new UnauthorizedAccessException("Authentication header is invalid.", e);
         }
 
+        
+        
         Guid userId = await _userService.AuthenticateUserAsync(userName, password);
         if (userId == Guid.Empty)
         {
@@ -77,6 +85,8 @@ public class BasicAuthentication : IMiddleware
         }
         
         context.Items["UserId"] = userId.ToString();
+        
+        // Next middleware
         await next(context);
     }
 
@@ -88,13 +98,14 @@ public class BasicAuthentication : IMiddleware
         return userNamePassword;
     }
 
-    private void SplitString(string authenticationHeader, string seperator, out string left, out string right)
+    private void SplitString(string authenticationHeader, string separator, out string left, out string right)
     {
         left = right = string.Empty;
-        string[] array = authenticationHeader.Split(seperator);
+        string[] array = authenticationHeader.Split(separator);
 
         if (array is not [var a, var b]) return;
         left = a;
         right = b;
+
     }
 }

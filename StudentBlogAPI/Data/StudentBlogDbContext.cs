@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using StudentBlogAPI.Features.Comments.Models;
-using StudentBlogAPI.Features.Posts.Models;
-using StudentBlogAPI.Features.Users.Models;
+using StudentBlogAPI.Features.Comments;
+using StudentBlogAPI.Features.Posts;
+using StudentBlogAPI.Features.Users;
 
-namespace StudentBlogAPI.Configuration.Database;
+namespace StudentBlogAPI.Data;
 
 public class StudentBlogDbContext(DbContextOptions<StudentBlogDbContext> options) : DbContext(options)
 {
