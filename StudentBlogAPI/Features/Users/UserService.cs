@@ -35,26 +35,94 @@ public class UserService
     }
     
     // Read
-    public Task<UserDTO?> GetByIdAsync(Guid id)
+    public async Task<UserDTO?> GetByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        User? user = await userRepository.GetByIdAsync(id);
+        
+        return user is null
+            ? null
+            : userMapper.MapToDTO(user);
     }
 
-    public Task<IEnumerable<UserDTO>> GetPagedAsync(int pageNumber, int pageSize)
+    public async Task<IEnumerable<UserDTO>> GetPagedAsync(int pageNumber, int pageSize)
     {
-        throw new NotImplementedException();
+        IEnumerable<User> users = await userRepository.GetPagedAsync(pageNumber, pageSize);
+        
+        return users.Select(userMapper.MapToDTO).ToList();
     }
     
     // Update
-    public Task<UserDTO?> UpdateAsync(UserDTO model)
+    public async Task<UserDTO?> UpdateAsync(UserDTO userDTO)
     {
-        throw new NotImplementedException();
+        User user = userMapper.MapToModel(userDTO);
+        
+        string? loggedInUserId = httpContextAccessor.HttpContext?.Items["UserId"] as string;
+        
+        if (loggedInUserId is null)
+        {
+            logger.LogWarning("User {UserId} not found", loggedInUserId);
+            return null;
+        }
+        
+        Guid id = Guid.Parse(loggedInUserId);
+        
+        if (!id.ToString().Equals(user.Id.ToString()))
+        {
+            logger.LogWarning("Could not update User {UserId}", loggedInUserId);
+            return null;
+        }
+        
+        logger.LogDebug("Updating user {UserId}", loggedInUserId);
+        User? updatedUser = await userRepository.UpdateAsync(user);
+
+        if (updatedUser is null)
+        {
+            logger.LogWarning("Did not update user {UserId}", id);
+            return null;
+        }
+        
+        logger.LogDebug("User {UserId} updated", updatedUser.Id);
+        return userMapper.MapToDTO(updatedUser);
     }
     
     // Delete
-    public Task<bool> DeleteByIdAsync(Guid id)
+    public async Task<bool> DeleteByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        string? loggedInUserId = httpContextAccessor.HttpContext?.Items["UserId"] as string;
+
+        User? loggedInUser =
+            (await userRepository.FindAsync(user => user.Id.ToString() == loggedInUserId)).FirstOrDefault();
+
+        if (loggedInUserId is null)
+        {
+            logger.LogWarning("User {UserId} not found", loggedInUserId);
+            return false;
+        }
+
+        if (!id.ToString().Equals(loggedInUser!.Id.ToString()))
+        {
+            logger.LogWarning("Could not delete User {UserId}", loggedInUserId);
+            return false;
+        }
+
+        if (loggedInUser.IsAdminUser)
+        {
+            await userRepository.DeleteByIdAsync(id);
+            return true;
+        }
+        
+        logger.LogDebug("Deleting user {UserId}", loggedInUserId);
+        User? deletedUser = await userRepository.DeleteByIdAsync(id);
+
+        if (deletedUser is null)
+        {
+            logger.LogWarning("Did not delete user {UserId}", id);
+            return false;
+        }
+        
+        logger.LogDebug("User {UserId} deleted", deletedUser.Id);
+        return true;
+
     }
     
     
@@ -81,7 +149,7 @@ public class UserService
             : Guid.Empty;
     }
     
-    public async Task<IEnumerable<UserDTO>> FindAsync(UserSearchParameters searchParameters)
+    public async Task<IEnumerable<UserDTO>> FindAsync(SearchParameters searchParameters)
     {
         Expression<Func<User, bool>> predicate = user => 
             (string.IsNullOrEmpty(searchParameters.UserName) || user.UserName.Contains(searchParameters.UserName)) &&

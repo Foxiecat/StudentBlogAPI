@@ -12,7 +12,7 @@ public class User
     
     [Required]
     [MinLength(3), MaxLength(30)]
-    public string UserName { get; init; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
     
     [Required]
     [MinLength(2), MaxLength(50)]

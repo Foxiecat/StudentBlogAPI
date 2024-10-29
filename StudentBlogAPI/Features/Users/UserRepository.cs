@@ -1,5 +1,7 @@
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using StudentBlogAPI.Data;
+using StudentBlogAPI.Features.Users.DTOs;
 using StudentBlogAPI.Features.Users.Interfaces;
 
 namespace StudentBlogAPI.Features.Users;
@@ -13,29 +15,69 @@ public class UserRepository(ILogger<UserRepository> logger, StudentBlogDbContext
         
         return model;
     }
-
-    public Task<User?> UpdateAsync(User model)
+    
+    public async Task<User?> GetByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        return await dbContext.Users.FirstOrDefaultAsync(user => user.Id == id);
     }
 
-    public Task<User?> DeleteByIdAsync(Guid id)
+    public async Task<IEnumerable<User>> GetPagedAsync(int pageNumber, int pageSize)
     {
-        throw new NotImplementedException();
+        int skip = (pageNumber - 1) * pageSize;
+        
+        List<User> users = await dbContext.Users
+            .OrderBy(user => user.UserName)
+            .Skip(skip)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return users;
     }
 
-    public Task<User?> GetByIdAsync(Guid id)
+    public async Task<IEnumerable<User>> FindAsync(Expression<Func<User, bool>> predicate)
     {
-        throw new NotImplementedException();
+        return await dbContext.Users
+            .Where(predicate)
+            .ToListAsync();
     }
 
-    public Task<IEnumerable<User>> GetPagedAsync(int pageNumber, int pageSize)
+    public async Task<User?> UpdateAsync(User model)
     {
-        throw new NotImplementedException();
+        try
+        {
+            User? existingUser = await dbContext.Users.FindAsync(model.Id);
+
+            if (existingUser == null)
+            {
+                logger.LogWarning("Could not find user: {UserId}", model.Id);
+                return null;
+            }
+            
+            existingUser.FirstName = model.FirstName;
+            existingUser.LastName = model.LastName;
+            existingUser.UserName = model.UserName;
+            existingUser.Email = model.Email;
+            existingUser.Updated = DateTime.UtcNow;
+
+            await dbContext.SaveChangesAsync();
+            return existingUser;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Error updating user: {UserId}", model.Id);
+            throw;
+        }
     }
 
-    public Task<IEnumerable<User>> FindAsync(Expression<Func<User, bool>> predicate)
+    public async Task<User?> DeleteByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        User? deletedUser = await dbContext.Users.FindAsync(id);
+
+        await dbContext.Users
+            .Where(user => user.Id == id)
+            .ExecuteDeleteAsync();
+        
+        await dbContext.SaveChangesAsync();
+        return deletedUser;
     }
 }

@@ -7,15 +7,15 @@ using StudentBlogAPI.Features.Users.Interfaces;
 
 namespace StudentBlogAPI.UnitTests.Features.Users;
 
-public class UsersControllerTests
+public class UserControllerTests
 {
-    private readonly UsersController _usersController;
-    private readonly Mock<ILogger<UsersController>> _mockLogger = new();
+    private readonly UserController _userController;
+    private readonly Mock<ILogger<UserController>> _mockLogger = new();
     private readonly Mock<IUserService> _mockUserService = new();
 
-    public UsersControllerTests()
+    public UserControllerTests()
     {
-        _usersController = new UsersController(_mockLogger.Object, _mockUserService.Object);
+        _userController = new UserController(_mockLogger.Object, _mockUserService.Object);
     }
 
 
@@ -47,7 +47,7 @@ public class UsersControllerTests
 
         
         // Act
-        ActionResult<UserDTO> result = await _usersController.RegisterUserAsync(registrationDTO);
+        ActionResult<UserDTO> result = await _userController.RegisterUserAsync(registrationDTO);
 
         
         // Assert
