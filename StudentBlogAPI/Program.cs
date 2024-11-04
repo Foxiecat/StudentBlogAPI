@@ -2,7 +2,7 @@ using Serilog;
 
 namespace StudentBlogAPI;
 
-internal static class Program
+internal class Program
 {
     public static void Main(string[] args)
     {
@@ -21,7 +21,7 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            Log.Fatal(exception, "Application terminated unexpectedly");
+            Log.Fatal(exception, "Application terminated unexpectedly!");
         }
         finally
         {

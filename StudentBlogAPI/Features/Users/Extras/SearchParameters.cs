@@ -1,4 +1,4 @@
-namespace StudentBlogAPI.Features.Users;
+namespace StudentBlogAPI.Features.Users.Extras;
 
 public class SearchParameters
 {

@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using StudentBlogAPI.Data;
-using StudentBlogAPI.Features.Users.DTOs;
+using StudentBlogAPI.Features.Posts;
 using StudentBlogAPI.Features.Users.Interfaces;
 
 namespace StudentBlogAPI.Features.Users;
@@ -10,6 +10,13 @@ public class UserRepository(ILogger<UserRepository> logger, StudentBlogDbContext
 {
     public async Task<User?> AddAsync(User model)
     {
+        bool checkIfUserExists = dbContext.Users.Any(user => user.Id == model.Id);
+        if (checkIfUserExists)
+        {
+            logger.LogWarning("User with ID {UserId} already exists.", model.Id);
+            return null;
+        }
+        
         await dbContext.Users.AddAsync(model);
         await dbContext.SaveChangesAsync();
         
@@ -32,6 +39,15 @@ public class UserRepository(ILogger<UserRepository> logger, StudentBlogDbContext
             .ToListAsync();
 
         return users;
+    }
+
+    public async Task<IEnumerable<Post>> GetUserPostsAsync(Guid userId)
+    {
+        List<Post> posts = await dbContext.Posts
+            .Where(post => post.UserId == userId)
+            .ToListAsync();
+
+        return posts;
     }
 
     public async Task<IEnumerable<User>> FindAsync(Expression<Func<User, bool>> predicate)

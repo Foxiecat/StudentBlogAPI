@@ -8,6 +8,7 @@ public static class AppConfiguration
     {
         if (app.Environment.IsDevelopment())
         {
+            app.UseExceptionHandler("/error");
             app.UseSwagger();
             app.UseSwaggerUI();
         }

@@ -18,7 +18,7 @@ public class StudentBlogDbContext(DbContextOptions<StudentBlogDbContext> options
         modelBuilder.Entity<User>(entity =>
         {
             entity.Property(property => property.Email).IsRequired();
-            
+
             entity.HasIndex(user => user.Email).IsUnique();
             entity.HasIndex(user => user.UserName).IsUnique();
         });

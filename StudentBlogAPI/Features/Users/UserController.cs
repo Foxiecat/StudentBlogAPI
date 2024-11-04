@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Users.DTOs;
+using StudentBlogAPI.Features.Users.Extras;
 using StudentBlogAPI.Features.Users.Interfaces;
 
 namespace StudentBlogAPI.Features.Users;
@@ -18,6 +20,7 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
             : Ok(user);
     }
 
+    
     [HttpGet(Name = "GetUserAsync")]
     public async Task<ActionResult> GetAllUserAsync(
         [FromQuery] SearchParameters? searchParameters,
@@ -37,24 +40,41 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
 
     }
 
+    
     [HttpGet("{id:guid}", Name = "GetUserByIdAsync")]
     public async Task<ActionResult> GetUserByIdAsync(Guid id)
     {
         UserDTO? userDTO = await userService.GetByIdAsync(id);
+        
         return userDTO is null
             ? BadRequest("User not found")
             : Ok(userDTO);
     }
 
+
+    [HttpGet("{id:guid}/posts", Name = "GetUserPostsAsync")]
+    public async Task<ActionResult> GetUserPostsAsync(Guid id)
+    {
+        IEnumerable<PostDTO> postDTO = await userService.GetUserPostsAsync(id);
+        
+        return Ok(postDTO);
+    }
+
+    
     [HttpPut("{id:guid}", Name = "UpdateUserAsync")]
     public async Task<ActionResult> UpdateUserAsync(Guid id, 
-                                                    [FromQuery] SearchParameters? updatedDetails)
+                                                    [FromQuery] FieldsForUpdateUser? updatedDetails)
     {
-        UserDTO? userDTO = await userService.GetByIdAsync(id);
-        
         if (updatedDetails is null)
             return NotFound("Please provide updated details");
-
+        
+        UserDTO? userDTO = await userService.GetByIdAsync(id);
+        
+        if (userDTO is null)
+        {
+            return NotFound("User not found");
+        }
+        
         
         if (updatedDetails.FirstName is not null)
             userDTO.FirstName = updatedDetails.FirstName;
@@ -71,11 +91,10 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
         logger.LogDebug("Updating user: {UserId}", id);
         UserDTO? updatedUser = await userService.UpdateAsync(userDTO);
         
-        return updatedUser is null
-            ? NotFound("User not found")
-            : Ok(updatedUser);
+        return Ok(updatedUser);
     }
 
+    
     [HttpDelete("{id:guid}", Name = "DeleteUserAsync")]
     public async Task<ActionResult> DeleteUserAsync(Guid id)
     {

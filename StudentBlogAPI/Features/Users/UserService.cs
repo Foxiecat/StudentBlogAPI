@@ -1,6 +1,9 @@
 using System.Linq.Expressions;
-using StudentBlogAPI.Features.Common.Interfaces;
+using StudentBlogAPI.Common.Interfaces;
+using StudentBlogAPI.Features.Posts;
+using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Users.DTOs;
+using StudentBlogAPI.Features.Users.Extras;
 using StudentBlogAPI.Features.Users.Interfaces;
 
 namespace StudentBlogAPI.Features.Users;
@@ -10,6 +13,7 @@ public class UserService
     ILogger<UserService> logger,
     IMapper<User, UserDTO> userMapper,
     IMapper<User, RegistrationDTO> registrationMapper,
+    IMapper<Post, PostDTO> postMapper,
     IUserRepository userRepository,
     IHttpContextAccessor httpContextAccessor
     )
@@ -49,6 +53,13 @@ public class UserService
         IEnumerable<User> users = await userRepository.GetPagedAsync(pageNumber, pageSize);
         
         return users.Select(userMapper.MapToDTO).ToList();
+    }
+
+    public async Task<IEnumerable<PostDTO>> GetUserPostsAsync(Guid userId)
+    {
+        IEnumerable<Post> posts = await userRepository.GetUserPostsAsync(userId);
+        
+        return posts.Select(postMapper.MapToDTO).ToList();
     }
     
     // Update
