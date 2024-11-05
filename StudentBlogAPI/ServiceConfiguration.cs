@@ -7,6 +7,8 @@ using StudentBlogAPI.Common.Interfaces;
 using StudentBlogAPI.Data;
 using StudentBlogAPI.Data.Health;
 using StudentBlogAPI.Extensions;
+using StudentBlogAPI.Features.Comments;
+using StudentBlogAPI.Features.Comments.Interfaces;
 using StudentBlogAPI.Features.Posts;
 using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Posts.Interfaces;
@@ -50,6 +52,7 @@ public static class ServiceConfiguration
             .AddScoped<IMapper<Post, CreatePostDTO>, CreatePostMapper>();
         
         // Comment services
+            
     }
 
     private static void AddFluentValidation(this IServiceCollection services)

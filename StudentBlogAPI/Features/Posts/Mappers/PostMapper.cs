@@ -12,8 +12,7 @@ public class PostMapper : IMapper<Post, PostDTO>
             Id = post.Id,
             UserId = post.UserId,
             Title = post.Title,
-            Content = post.Content,
-            DatePosted = post.DatePosted
+            Content = post.Content
         };
     }
 
@@ -24,8 +23,7 @@ public class PostMapper : IMapper<Post, PostDTO>
             Id = postDTO.Id,
             UserId = postDTO.UserId,
             Title = postDTO.Title,
-            Content = postDTO.Content,
-            DatePosted = postDTO.DatePosted
+            Content = postDTO.Content
         };
     }
 }

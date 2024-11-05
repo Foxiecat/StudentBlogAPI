@@ -34,7 +34,6 @@
 
     <ItemGroup>
       <Folder Include="Data\Migrations\" />
-      <Folder Include="Features\Posts\Validators\" />
       <Folder Include="Logs\" />
     </ItemGroup>
 

@@ -1,6 +1,7 @@
 using StudentBlogAPI.Common.Interfaces;
 using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Posts.Interfaces;
+using StudentBlogAPI.Features.Users;
 
 namespace StudentBlogAPI.Features.Posts;
 
