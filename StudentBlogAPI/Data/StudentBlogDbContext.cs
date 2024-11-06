@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StudentBlogAPI.Features.Comments;
+using StudentBlogAPI.Features.Comments.Models;
 using StudentBlogAPI.Features.Posts;
 using StudentBlogAPI.Features.Users;
 

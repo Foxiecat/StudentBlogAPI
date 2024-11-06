@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Users.DTOs;
-using StudentBlogAPI.Features.Users.Extras;
 using StudentBlogAPI.Features.Users.Interfaces;
 
 namespace StudentBlogAPI.Features.Users;
@@ -11,9 +10,9 @@ namespace StudentBlogAPI.Features.Users;
 public class UserController(ILogger<UserController> logger, IUserService userService) : ControllerBase
 {
     [HttpPost("register", Name = "RegisterUserAsync")]
-    public async Task<ActionResult> RegisterUserAsync(RegistrationDTO registrationDTO)
+    public async Task<ActionResult> RegisterUserAsync(UserRequest userRequest)
     {
-        UserDTO? user = await userService.RegisterAsync(registrationDTO);
+        UserResponse? user = await userService.RegisterAsync(userRequest);
         
         return user is null
             ? BadRequest("Failed to register user")
@@ -23,7 +22,7 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
     
     [HttpGet(Name = "GetUserAsync")]
     public async Task<ActionResult> GetAllUserAsync(
-        [FromQuery] SearchParameters? searchParameters,
+        [FromQuery] UserSearchRequest? searchParameters,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
@@ -35,7 +34,7 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
             return Ok(await userService.FindAsync(searchParameters));
         }
         
-        IEnumerable<UserDTO> userDTOs = await userService.GetPagedAsync(pageNumber, pageSize);
+        IEnumerable<UserResponse> userDTOs = await userService.GetPagedAsync(pageNumber, pageSize);
         return Ok(userDTOs);
 
     }
@@ -44,7 +43,7 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
     [HttpGet("{id:guid}", Name = "GetUserByIdAsync")]
     public async Task<ActionResult> GetUserByIdAsync(Guid id)
     {
-        UserDTO? userDTO = await userService.GetByIdAsync(id);
+        UserResponse? userDTO = await userService.GetByIdAsync(id);
         
         return userDTO is null
             ? BadRequest("User not found")
@@ -55,20 +54,21 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
     [HttpGet("{id:guid}/posts", Name = "GetUserPostsAsync")]
     public async Task<ActionResult> GetUserPostsAsync(Guid id)
     {
-        IEnumerable<PostDTO> postDTO = await userService.GetUserPostsAsync(id);
+        IEnumerable<PostResponse> postDTO = await userService.GetUserPostsAsync(id);
         
         return Ok(postDTO);
     }
+    
 
     
     [HttpPut("{id:guid}", Name = "UpdateUserAsync")]
     public async Task<ActionResult> UpdateUserAsync(Guid id, 
-                                                    [FromQuery] FieldsForUpdateUser? updatedDetails)
+                                                    [FromQuery] UserUpdateRequest? updatedDetails)
     {
         if (updatedDetails is null)
             return NotFound("Please provide updated details");
         
-        UserDTO? userDTO = await userService.GetByIdAsync(id);
+        UserResponse? userDTO = await userService.GetByIdAsync(id);
         
         if (userDTO is null)
         {
@@ -89,7 +89,7 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
             userDTO.Email = updatedDetails.Email;
         
         logger.LogDebug("Updating user: {UserId}", id);
-        UserDTO? updatedUser = await userService.UpdateAsync(userDTO);
+        UserResponse? updatedUser = await userService.UpdateAsync(userDTO);
         
         return Ok(updatedUser);
     }

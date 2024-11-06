@@ -3,11 +3,11 @@ using StudentBlogAPI.Features.Posts.DTOs;
 
 namespace StudentBlogAPI.Features.Posts.Mappers;
 
-public class PostMapper : IMapper<Post, PostDTO>
+public class PostMapper : IMapper<Post, PostResponse>
 {
-    public PostDTO MapToDTO(Post post)
+    public PostResponse MapToDTO(Post post)
     {
-        return new PostDTO
+        return new PostResponse
         {
             Id = post.Id,
             UserId = post.UserId,
@@ -16,14 +16,14 @@ public class PostMapper : IMapper<Post, PostDTO>
         };
     }
 
-    public Post MapToModel(PostDTO postDTO)
+    public Post MapToModel(PostResponse postResponse)
     {
         return new Post
         {
-            Id = postDTO.Id,
-            UserId = postDTO.UserId,
-            Title = postDTO.Title,
-            Content = postDTO.Content
+            Id = postResponse.Id,
+            UserId = postResponse.UserId,
+            Title = postResponse.Title,
+            Content = postResponse.Content
         };
     }
 }

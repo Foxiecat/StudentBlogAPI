@@ -3,8 +3,8 @@ using StudentBlogAPI.Features.Posts.DTOs;
 
 namespace StudentBlogAPI.Features.Posts.Interfaces;
 
-public interface IPostService : IService<PostDTO>
+public interface IPostService : IService<PostResponse>
 {
-    Task<PostDTO?> CreatePostAsync(CreatePostDTO createPostDTO);
-    Task<IEnumerable<PostDTO>> FindAsync();
+    Task<PostResponse?> CreatePostAsync(PostRequest postRequest);
+    Task<IEnumerable<PostResponse>> FindAsync();
 }

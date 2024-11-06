@@ -1,6 +1,6 @@
-namespace StudentBlogAPI.Features.Users.Extras;
+namespace StudentBlogAPI.Features.Users.DTOs;
 
-public class FieldsForUpdateUser
+public class UserUpdateRequest
 {
     public string? UserName { get; set; }
     public string? FirstName { get; set; }

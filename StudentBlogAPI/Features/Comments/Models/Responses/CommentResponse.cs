@@ -1,9 +1,6 @@
-using StudentBlogAPI.Features.Posts;
-using StudentBlogAPI.Features.Users;
+namespace StudentBlogAPI.Features.Comments.Models.Responses;
 
-namespace StudentBlogAPI.Features.Comments.DTOs;
-
-public class CommentDTO
+public class CommentResponse
 {
     public Guid Id { get; set; }
     public Guid PostId { get; set; }

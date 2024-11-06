@@ -1,10 +1,10 @@
 using StudentBlogAPI.Common.Interfaces;
-using StudentBlogAPI.Features.Comments.DTOs;
+using StudentBlogAPI.Features.Comments.Models.Responses;
 
 namespace StudentBlogAPI.Features.Comments.Interfaces;
 
-public interface ICommentService : IService<CommentDTO>
+public interface ICommentService : IService<CommentResponse>
 {
-    Task<CommentDTO> CreateCommentAsync(Guid postId, string content);
-    Task<IEnumerable<CommentDTO>> FindAsync();
+    Task<CommentResponse?> AddCommentAsync(Guid postId, AddCommentResponse addCommentResponse);
+    Task<IEnumerable<CommentResponse>> FindAsync();
 }

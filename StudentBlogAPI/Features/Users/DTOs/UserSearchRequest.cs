@@ -1,6 +1,6 @@
-namespace StudentBlogAPI.Features.Users.Extras;
+namespace StudentBlogAPI.Features.Users.DTOs;
 
-public class SearchParameters
+public class UserSearchRequest
 {
     public string? UserName { get; init; }
     public string? FirstName { get; init; }

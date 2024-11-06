@@ -3,7 +3,6 @@ using StudentBlogAPI.Common.Interfaces;
 using StudentBlogAPI.Features.Posts;
 using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Users.DTOs;
-using StudentBlogAPI.Features.Users.Extras;
 using StudentBlogAPI.Features.Users.Interfaces;
 
 namespace StudentBlogAPI.Features.Users;
@@ -11,24 +10,24 @@ namespace StudentBlogAPI.Features.Users;
 public class UserService
     (
     ILogger<UserService> logger,
-    IMapper<User, UserDTO> userMapper,
-    IMapper<User, RegistrationDTO> registrationMapper,
-    IMapper<Post, PostDTO> postMapper,
+    IMapper<User, UserResponse> userMapper,
+    IMapper<User, UserRequest> registrationMapper,
+    IMapper<Post, PostResponse> postMapper,
     IUserRepository userRepository,
     IHttpContextAccessor httpContextAccessor
     )
     : IUserService
 {
     // Create
-    public async Task<UserDTO?> RegisterAsync(RegistrationDTO registrationDTO)
+    public async Task<UserResponse?> RegisterAsync(UserRequest userRequest)
     {
-        User user = registrationMapper.MapToModel(registrationDTO);
+        User user = registrationMapper.MapToModel(userRequest);
         
         user.Id = Guid.NewGuid();
         user.Created = DateTime.UtcNow;
         user.IsAdminUser = false;
         
-        user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(registrationDTO.Password);
+        user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(userRequest.Password);
         
         // Add user to database
         User? addedUser = await userRepository.AddAsync(user);
@@ -39,7 +38,7 @@ public class UserService
     }
     
     // Read
-    public async Task<UserDTO?> GetByIdAsync(Guid id)
+    public async Task<UserResponse?> GetByIdAsync(Guid id)
     {
         User? user = await userRepository.GetByIdAsync(id);
         
@@ -48,14 +47,14 @@ public class UserService
             : userMapper.MapToDTO(user);
     }
 
-    public async Task<IEnumerable<UserDTO>> GetPagedAsync(int pageNumber, int pageSize)
+    public async Task<IEnumerable<UserResponse>> GetPagedAsync(int pageNumber, int pageSize)
     {
         IEnumerable<User> users = await userRepository.GetPagedAsync(pageNumber, pageSize);
         
         return users.Select(userMapper.MapToDTO).ToList();
     }
 
-    public async Task<IEnumerable<PostDTO>> GetUserPostsAsync(Guid userId)
+    public async Task<IEnumerable<PostResponse>> GetUserPostsAsync(Guid userId)
     {
         IEnumerable<Post> posts = await userRepository.GetUserPostsAsync(userId);
         
@@ -63,9 +62,9 @@ public class UserService
     }
     
     // Update
-    public async Task<UserDTO?> UpdateAsync(UserDTO userDTO)
+    public async Task<UserResponse?> UpdateAsync(UserResponse userResponse)
     {
-        User user = userMapper.MapToModel(userDTO);
+        User user = userMapper.MapToModel(userResponse);
         
         string? loggedInUserId = httpContextAccessor.HttpContext?.Items["UserId"] as string;
         
@@ -137,9 +136,9 @@ public class UserService
     }
     
     
-    public async Task<UserDTO?> AddAsync(UserDTO userDTO)
+    public async Task<UserResponse?> AddAsync(UserResponse userResponse)
     {
-        User model = userMapper.MapToModel(userDTO);
+        User model = userMapper.MapToModel(userResponse);
         User? modelResponse = await userRepository.AddAsync(model);
         
         return modelResponse is null
@@ -160,13 +159,13 @@ public class UserService
             : Guid.Empty;
     }
     
-    public async Task<IEnumerable<UserDTO>> FindAsync(SearchParameters searchParameters)
+    public async Task<IEnumerable<UserResponse>> FindAsync(UserSearchRequest userSearchRequest)
     {
         Expression<Func<User, bool>> predicate = user => 
-            (string.IsNullOrEmpty(searchParameters.UserName) || user.UserName.Contains(searchParameters.UserName)) &&
-            (string.IsNullOrEmpty(searchParameters.FirstName) || user.FirstName.Contains(searchParameters.FirstName)) &&
-            (string.IsNullOrEmpty(searchParameters.LastName) || user.LastName.Contains(searchParameters.LastName)) &&
-            (string.IsNullOrEmpty(searchParameters.Email) || user.Email.Contains(searchParameters.Email));
+            (string.IsNullOrEmpty(userSearchRequest.UserName) || user.UserName.Contains(userSearchRequest.UserName)) &&
+            (string.IsNullOrEmpty(userSearchRequest.FirstName) || user.FirstName.Contains(userSearchRequest.FirstName)) &&
+            (string.IsNullOrEmpty(userSearchRequest.LastName) || user.LastName.Contains(userSearchRequest.LastName)) &&
+            (string.IsNullOrEmpty(userSearchRequest.Email) || user.Email.Contains(userSearchRequest.Email));
         
         IEnumerable<User> users = await userRepository.FindAsync(predicate);
         

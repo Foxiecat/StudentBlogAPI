@@ -6,7 +6,7 @@ using StudentBlogAPI.Features.Users;
 
 namespace StudentBlogAPI.Features.Posts.DTOs;
 
-public class PostDTO
+public class PostResponse
 {
     public Guid Id { get; set; }
     public Guid? UserId { get; set; }

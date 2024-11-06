@@ -6,14 +6,14 @@ using StudentBlogAPI.Features.Users;
 namespace StudentBlogAPI.Features.Posts;
 
 public class PostService(ILogger<PostService> logger,
-                         IMapper<Post, PostDTO> postMapper,
-                         IMapper<Post, CreatePostDTO> createPostMapper,
+                         IMapper<Post, PostResponse> postMapper,
+                         IMapper<Post, PostRequest> createPostMapper,
                          IPostRepository postRepository,
                          IHttpContextAccessor httpContextAccessor) : IPostService
 {
-    public async Task<PostDTO?> CreatePostAsync(CreatePostDTO createPostDTO)
+    public async Task<PostResponse?> CreatePostAsync(PostRequest postRequest)
     {
-        Post post = createPostMapper.MapToModel(createPostDTO);
+        Post post = createPostMapper.MapToModel(postRequest);
         string? loggedInUserIdString = httpContextAccessor.HttpContext?.Items["UserId"] as string;
 
         if (loggedInUserIdString == null)
@@ -26,8 +26,8 @@ public class PostService(ILogger<PostService> logger,
         
         post.Id = Guid.NewGuid();
         post.UserId = loggedInUserId;
-        post.Title = createPostDTO.Title;
-        post.Content = createPostDTO.Content;
+        post.Title = postRequest.Title;
+        post.Content = postRequest.Content;
         post.DatePosted = DateTime.UtcNow;
         
         Post? addedPost = await postRepository.AddAsync(post);
@@ -37,9 +37,9 @@ public class PostService(ILogger<PostService> logger,
             : postMapper.MapToDTO(addedPost);
     }
     
-    public async Task<PostDTO?> AddAsync(PostDTO postDTO)
+    public async Task<PostResponse?> AddAsync(PostResponse postResponse)
     {
-        Post model = postMapper.MapToModel(postDTO);
+        Post model = postMapper.MapToModel(postResponse);
         Post? modelResponse = await postRepository.AddAsync(model);
         
         return modelResponse is null
@@ -48,7 +48,7 @@ public class PostService(ILogger<PostService> logger,
     }
 
     
-    public async Task<PostDTO?> GetByIdAsync(Guid id)
+    public async Task<PostResponse?> GetByIdAsync(Guid id)
     {
         if (id == Guid.Empty)
         {
@@ -63,7 +63,7 @@ public class PostService(ILogger<PostService> logger,
             : postMapper.MapToDTO(post);
     }
 
-    public async Task<IEnumerable<PostDTO>> GetPagedAsync(int pageNumber, int pageSize)
+    public async Task<IEnumerable<PostResponse>> GetPagedAsync(int pageNumber, int pageSize)
     {
         IEnumerable<Post>? posts = await postRepository.GetPagedAsync(pageNumber, pageSize);
         
@@ -71,9 +71,9 @@ public class PostService(ILogger<PostService> logger,
     }
     
     
-    public async Task<PostDTO?> UpdateAsync(PostDTO postDTO)
+    public async Task<PostResponse?> UpdateAsync(PostResponse postResponse)
     {
-        Post post = postMapper.MapToModel(postDTO);
+        Post post = postMapper.MapToModel(postResponse);
         
         string? loggedInUserId = httpContextAccessor.HttpContext?.Items["UserId"] as string;
 
@@ -148,7 +148,7 @@ public class PostService(ILogger<PostService> logger,
         return true;
     }
 
-    public async Task<IEnumerable<PostDTO>> FindAsync()
+    public async Task<IEnumerable<PostResponse>> FindAsync()
     {
         throw new NotImplementedException();
     }

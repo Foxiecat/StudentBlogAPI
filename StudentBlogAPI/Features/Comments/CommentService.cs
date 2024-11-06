@@ -1,25 +1,48 @@
 using StudentBlogAPI.Common.Interfaces;
-using StudentBlogAPI.Features.Comments.DTOs;
 using StudentBlogAPI.Features.Comments.Interfaces;
+using StudentBlogAPI.Features.Comments.Models;
+using StudentBlogAPI.Features.Comments.Models.Responses;
 
 namespace StudentBlogAPI.Features.Comments;
 
 public class CommentService(ILogger<CommentService> logger,
-                            IMapper<Comment, CommentDTO> commentMapper,
+                            IMapper<Comment, CommentResponse> commentMapper,
+                            IMapper<Comment, AddCommentResponse> createCommentMapper,
                             ICommentRepository commentRepository,
                             IHttpContextAccessor httpContextAccessor) : ICommentService
 {
-    public Task<CommentDTO> CreateCommentAsync(Guid postId, string content)
+    public async Task<CommentResponse?> AddCommentAsync(Guid postId, AddCommentResponse addCommentResponse)
     {
-        throw new NotImplementedException();
+        Comment comment = createCommentMapper.MapToModel(addCommentResponse);
+        string? loggedInUserId = httpContextAccessor.HttpContext?.Items["UserId"] as string;
+        
+        if (loggedInUserId == null)
+        {
+            logger.LogWarning("UserId {UserId} not found", loggedInUserId);
+            return null;
+        }
+        
+        Guid userId = Guid.Parse(loggedInUserId);
+        
+        comment.Id = Guid.NewGuid();
+        comment.PostId = postId;
+        comment.UserId = userId;
+        comment.Content = addCommentResponse.Content;
+        comment.DateCommented = DateTime.UtcNow;
+
+        Comment? commentAdded = await commentRepository.AddAsync(comment);
+        
+        return commentAdded is null
+            ? null
+            : commentMapper.MapToDTO(commentAdded);
     }
     
-    public Task<CommentDTO?> AddAsync(CommentDTO model)
+    public Task<CommentResponse?> AddAsync(CommentResponse model)
     {
         throw new NotImplementedException();
     }
 
-    public Task<CommentDTO?> UpdateAsync(CommentDTO user)
+    public Task<CommentResponse?> UpdateAsync(CommentResponse user)
     {
         throw new NotImplementedException();
     }
@@ -29,17 +52,17 @@ public class CommentService(ILogger<CommentService> logger,
         throw new NotImplementedException();
     }
 
-    public Task<CommentDTO?> GetByIdAsync(Guid id)
+    public Task<CommentResponse?> GetByIdAsync(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<CommentDTO>> GetPagedAsync(int pageNumber, int pageSize)
+    public Task<IEnumerable<CommentResponse>> GetPagedAsync(int pageNumber, int pageSize)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<CommentDTO>> FindAsync()
+    public Task<IEnumerable<CommentResponse>> FindAsync()
     {
         throw new NotImplementedException();
     }

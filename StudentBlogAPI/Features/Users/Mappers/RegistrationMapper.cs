@@ -3,11 +3,11 @@ using StudentBlogAPI.Features.Users.DTOs;
 
 namespace StudentBlogAPI.Features.Users.Mappers;
 
-public class RegistrationMapper : IMapper<User, RegistrationDTO>
+public class RegistrationMapper : IMapper<User, UserRequest>
 {
-    public RegistrationDTO MapToDTO(User model)
+    public UserRequest MapToDTO(User model)
     {
-        return new RegistrationDTO
+        return new UserRequest
         {
             FirstName = model.FirstName,
             LastName = model.LastName,
@@ -16,7 +16,7 @@ public class RegistrationMapper : IMapper<User, RegistrationDTO>
         };
     }
 
-    public User MapToModel(RegistrationDTO dto)
+    public User MapToModel(UserRequest dto)
     {
         return new User
         {

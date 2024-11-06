@@ -1,4 +1,11 @@
+using System.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
+using StudentBlogAPI.Auth;
+using StudentBlogAPI.Data;
+using StudentBlogAPI.Data.Health;
+using StudentBlogAPI.Extensions;
+using StudentBlogAPI.Middleware;
 
 namespace StudentBlogAPI;
 
@@ -12,10 +19,40 @@ internal class Program
         try
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            builder.AddServices();
+            builder.Services.AddControllers();
+            builder.Services.AddApiFeaturesServices();
+            builder.Services.AddDatabaseServices(builder.Configuration);
+            
+            builder.Services
+                .AddScoped<BasicAuthentication>()
+                .Configure<BasicAuthenticationOptions>(builder.Configuration.GetSection("BasicAuthenticationOptions"));
+            
+            builder.Host.UseSerilog((context, configuration) =>
+            {
+                configuration.ReadFrom.Configuration(context.Configuration);
+            });
+            
+            builder.Services
+                .AddHttpContextAccessor()
+                .AddEndpointsApiExplorer()
+                .AddSwaggerBasicAuthentication();
 
+            
+            // Http Configuration
             WebApplication app = builder.Build();
-            app.ConfigureHttpRequest();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/error");
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
+            // Middleware
+            app.UseHttpsRedirection()
+                .UseMiddleware<BasicAuthentication>()
+                .UseAuthorization();
+
+            app.MapControllers();
             
             app.Run();
         }

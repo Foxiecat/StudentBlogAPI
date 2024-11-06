@@ -9,9 +9,9 @@ namespace StudentBlogAPI.Features.Posts;
 public class PostController(ILogger<PostController> logger, IPostService postService) : ControllerBase
 {
     [HttpPost(Name = "CreatePostAsync")]
-    public async Task<ActionResult> CreatePostAsync(CreatePostDTO createPostDTO)
+    public async Task<ActionResult> CreatePostAsync(PostRequest postRequest)
     {
-        PostDTO? post = await postService.CreatePostAsync(createPostDTO);
+        PostResponse? post = await postService.CreatePostAsync(postRequest);
         
         return post is null
             ? BadRequest("Failed to create post")
@@ -22,7 +22,7 @@ public class PostController(ILogger<PostController> logger, IPostService postSer
     [HttpGet("{id:Guid}", Name = "GetPostByIdAsync")]
     public async Task<ActionResult> GetPostByIdAsync(Guid id)
     {
-        PostDTO? postDTO = await postService.GetByIdAsync(id);
+        PostResponse? postDTO = await postService.GetByIdAsync(id);
         
         return postDTO is null
             ? BadRequest($"Failed to get post with id: {id}")
@@ -34,7 +34,7 @@ public class PostController(ILogger<PostController> logger, IPostService postSer
     public async Task<ActionResult> GetPostsAsync([FromQuery] int pageNumber = 1,
                                                      [FromQuery] int pageSize = 10)
     {
-        IEnumerable<PostDTO> postDTOs = await postService.GetPagedAsync(pageNumber, pageSize);
+        IEnumerable<PostResponse> postDTOs = await postService.GetPagedAsync(pageNumber, pageSize);
         
         return Ok(postDTOs);
     }
@@ -42,9 +42,9 @@ public class PostController(ILogger<PostController> logger, IPostService postSer
     
     [HttpPut("{postId:Guid}", Name = "UpdatePostAsync")]
     public async Task<ActionResult> UpdatePostAsync(Guid postId,
-                                                    [FromBody] CreatePostDTO updatePostBody)
+                                                    [FromBody] PostRequest updatePostBody)
     {
-        PostDTO? postDTO = await postService.GetByIdAsync(postId);
+        PostResponse? postDTO = await postService.GetByIdAsync(postId);
         
         if (postDTO is null)
             return NotFound($"Failed to find post with id: {postId}");
@@ -52,7 +52,7 @@ public class PostController(ILogger<PostController> logger, IPostService postSer
         postDTO.Title = updatePostBody.Title;
         postDTO.Content = updatePostBody.Content;
         
-        PostDTO? updatedPost = await postService.UpdateAsync(postDTO);
+        PostResponse? updatedPost = await postService.UpdateAsync(postDTO);
 
         return Ok(updatedPost);
     }

@@ -3,23 +3,23 @@ using StudentBlogAPI.Features.Posts.DTOs;
 
 namespace StudentBlogAPI.Features.Posts.Mappers;
 
-public class CreatePostMapper : IMapper<Post, CreatePostDTO>
+public class CreatePostMapper : IMapper<Post, PostRequest>
 {
-    public CreatePostDTO MapToDTO(Post model)
+    public PostRequest MapToDTO(Post model)
     {
-        return new CreatePostDTO
+        return new PostRequest
         {
             Title = model.Title,
             Content = model.Content
         };
     }
 
-    public Post MapToModel(CreatePostDTO dto)
+    public Post MapToModel(PostRequest request)
     {
         return new Post
         {
-            Title = dto.Title,
-            Content = dto.Content
+            Title = request.Title,
+            Content = request.Content
         };
     }
 }

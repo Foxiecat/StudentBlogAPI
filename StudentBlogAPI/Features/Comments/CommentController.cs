@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using StudentBlogAPI.Features.Comments.DTOs;
 using StudentBlogAPI.Features.Comments.Interfaces;
+using StudentBlogAPI.Features.Comments.Models.Responses;
 
 namespace StudentBlogAPI.Features.Comments;
 
@@ -8,9 +8,9 @@ namespace StudentBlogAPI.Features.Comments;
 public class CommentController(ILogger<CommentController> logger, ICommentService commentService) : ControllerBase
 {
     [HttpPost("{postId:guid}", Name = "AddCommentAsync")]
-    public async Task<ActionResult> AddCommentAsync(Guid postId, [FromBody] string content = "Content")
+    public async Task<ActionResult> AddCommentAsync(Guid postId, [FromBody] AddCommentResponse addCommentResponse)
     {
-        CommentDTO? addedComment = await commentService.CreateCommentAsync(postId, content);
+        CommentResponse? addedComment = await commentService.AddCommentAsync(postId, addCommentResponse);
 
         return addedComment is null
             ? BadRequest("Comment could not be created")
