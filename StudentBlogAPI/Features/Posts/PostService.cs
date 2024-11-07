@@ -1,4 +1,4 @@
-using StudentBlogAPI.Common.Interfaces;
+using StudentBlogAPI.Features.Common.Interfaces;
 using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Posts.Interfaces;
 using StudentBlogAPI.Features.Users;
@@ -34,7 +34,7 @@ public class PostService(ILogger<PostService> logger,
 
         return addedPost is null
             ? null
-            : postMapper.MapToDTO(addedPost);
+            : postMapper.MapToResponse(addedPost);
     }
     
     public async Task<PostResponse?> AddAsync(PostResponse postResponse)
@@ -44,7 +44,7 @@ public class PostService(ILogger<PostService> logger,
         
         return modelResponse is null
             ? null
-            : postMapper.MapToDTO(modelResponse);
+            : postMapper.MapToResponse(modelResponse);
     }
 
     
@@ -60,21 +60,20 @@ public class PostService(ILogger<PostService> logger,
         
         return post is null
             ? null
-            : postMapper.MapToDTO(post);
+            : postMapper.MapToResponse(post);
     }
 
     public async Task<IEnumerable<PostResponse>> GetPagedAsync(int pageNumber, int pageSize)
     {
         IEnumerable<Post>? posts = await postRepository.GetPagedAsync(pageNumber, pageSize);
         
-        return posts.Select(postMapper.MapToDTO).ToList();
+        return posts.Select(postMapper.MapToResponse).ToList();
     }
     
     
     public async Task<PostResponse?> UpdateAsync(PostResponse postResponse)
     {
         Post post = postMapper.MapToModel(postResponse);
-        
         string? loggedInUserId = httpContextAccessor.HttpContext?.Items["UserId"] as string;
 
         if (loggedInUserId == null)
@@ -90,17 +89,17 @@ public class PostService(ILogger<PostService> logger,
             return null;
         }
         
+        
         logger.LogDebug("Updating post {PostId}", post.Id);
         Post? updatedPost = await postRepository.UpdateAsync(post);
 
         if (updatedPost is null)
         {
-            logger.LogWarning("Post {PostId} not found", post.Id);
+            logger.LogWarning("Post {PostId} failed to update", post.Id);
             return null;
         }
         
-        logger.LogDebug("Updating post {PostId}", post.Id);
-        return postMapper.MapToDTO(updatedPost);
+        return postMapper.MapToResponse(updatedPost);
     }
     
     public async Task<bool> DeleteByIdAsync(Guid id)

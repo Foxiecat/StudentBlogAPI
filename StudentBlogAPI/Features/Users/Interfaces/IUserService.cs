@@ -1,4 +1,4 @@
-using StudentBlogAPI.Common.Interfaces;
+using StudentBlogAPI.Features.Common.Interfaces;
 using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Users.DTOs;
 

@@ -1,4 +1,4 @@
-using StudentBlogAPI.Common.Interfaces;
+using StudentBlogAPI.Features.Common.Interfaces;
 
 namespace StudentBlogAPI.Features.Posts.Interfaces;
 

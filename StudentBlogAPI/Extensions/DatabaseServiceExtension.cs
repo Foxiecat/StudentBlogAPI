@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using StudentBlogAPI.Data;
-using StudentBlogAPI.Data.Health;
+using StudentBlogAPI.Database;
+using StudentBlogAPI.Database.Health;
 
 namespace StudentBlogAPI.Extensions;
 

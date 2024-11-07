@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using StudentBlogAPI.Data;
+using StudentBlogAPI.Database;
 using StudentBlogAPI.Features.Posts.Interfaces;
 
 namespace StudentBlogAPI.Features.Posts;

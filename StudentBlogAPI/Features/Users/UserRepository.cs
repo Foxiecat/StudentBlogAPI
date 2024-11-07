@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using StudentBlogAPI.Data;
+using StudentBlogAPI.Database;
 using StudentBlogAPI.Features.Posts;
 using StudentBlogAPI.Features.Users.Interfaces;
 
@@ -59,41 +59,37 @@ public class UserRepository(ILogger<UserRepository> logger, StudentBlogDbContext
 
     public async Task<User?> UpdateAsync(User model)
     {
-        try
-        {
-            User? existingUser = await dbContext.Users.FindAsync(model.Id);
+        User? existingUser = await dbContext.Users.FindAsync(model.Id);
 
-            if (existingUser == null)
-            {
-                logger.LogWarning("Could not find user: {UserId}", model.Id);
-                return null;
-            }
-            
-            existingUser.FirstName = model.FirstName;
-            existingUser.LastName = model.LastName;
-            existingUser.UserName = model.UserName;
-            existingUser.Email = model.Email;
-            existingUser.Updated = DateTime.UtcNow;
-
-            await dbContext.SaveChangesAsync();
-            return existingUser;
-        }
-        catch (Exception exception)
+        if (existingUser == null)
         {
-            logger.LogError(exception, "Error updating user: {UserId}", model.Id);
-            throw;
+            logger.LogWarning("Could not find user: {UserId}", model.Id);
+            return null;
         }
+        
+        existingUser.FirstName = model.FirstName;
+        existingUser.LastName = model.LastName;
+        existingUser.UserName = model.UserName;
+        existingUser.Email = model.Email;
+        existingUser.Updated = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+        return existingUser;
     }
 
     public async Task<User?> DeleteByIdAsync(Guid id)
     {
         User? deletedUser = await dbContext.Users.FindAsync(id);
 
-        await dbContext.Users
-            .Where(user => user.Id == id)
-            .ExecuteDeleteAsync();
-        
+        if (deletedUser is null)
+        {
+            logger.LogWarning("Could not find user: {UserId}, deletion aborted.", id);
+            return null;
+        }
+
+        dbContext.Users.Remove(deletedUser);
         await dbContext.SaveChangesAsync();
+        
         return deletedUser;
     }
 }

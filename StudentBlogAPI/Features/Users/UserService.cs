@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-using StudentBlogAPI.Common.Interfaces;
+using StudentBlogAPI.Features.Common.Interfaces;
 using StudentBlogAPI.Features.Posts;
 using StudentBlogAPI.Features.Posts.DTOs;
 using StudentBlogAPI.Features.Users.DTOs;
@@ -21,64 +21,64 @@ public class UserService
     // Create
     public async Task<UserResponse?> RegisterAsync(UserRequest userRequest)
     {
-        User user = registrationMapper.MapToModel(userRequest);
+        bool userExists =
+            (await userRepository.FindAsync(u => u.UserName == userRequest.UserName 
+                                                 || u.Email == userRequest.Email)).Any();
+        if (userExists)
+        {
+            logger.LogWarning("User already exists");
+            return null;
+        }
         
+        User user = registrationMapper.MapToModel(userRequest);
         user.Id = Guid.NewGuid();
         user.Created = DateTime.UtcNow;
         user.IsAdminUser = false;
-        
         user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(userRequest.Password);
         
-        // Add user to database
         User? addedUser = await userRepository.AddAsync(user);
-
         return addedUser is null
             ? null 
-            : userMapper.MapToDTO(addedUser);
+            : userMapper.MapToResponse(addedUser);
     }
     
     // Read
     public async Task<UserResponse?> GetByIdAsync(Guid id)
     {
         User? user = await userRepository.GetByIdAsync(id);
-        
         return user is null
             ? null
-            : userMapper.MapToDTO(user);
+            : userMapper.MapToResponse(user);
     }
 
     public async Task<IEnumerable<UserResponse>> GetPagedAsync(int pageNumber, int pageSize)
     {
         IEnumerable<User> users = await userRepository.GetPagedAsync(pageNumber, pageSize);
-        
-        return users.Select(userMapper.MapToDTO).ToList();
+        return users.Select(userMapper.MapToResponse).ToList();
     }
 
     public async Task<IEnumerable<PostResponse>> GetUserPostsAsync(Guid userId)
     {
         IEnumerable<Post> posts = await userRepository.GetUserPostsAsync(userId);
-        
-        return posts.Select(postMapper.MapToDTO).ToList();
+        return posts.Select(postMapper.MapToResponse).ToList();
     }
     
     // Update
-    public async Task<UserResponse?> UpdateAsync(UserResponse userResponse)
+    public async Task<UserResponse?> UpdateAsync(UserResponse updateRequest)
     {
-        User user = userMapper.MapToModel(userResponse);
-        
+        User user = userMapper.MapToModel(updateRequest);
         string? loggedInUserId = httpContextAccessor.HttpContext?.Items["UserId"] as string;
         
         if (loggedInUserId is null)
         {
-            logger.LogWarning("User {UserId} not found", loggedInUserId);
+            logger.LogWarning("Unauthorized update attempt by user {UserId}", loggedInUserId);
             return null;
         }
         
-        Guid id = Guid.Parse(loggedInUserId);
-        
-        if (!id.ToString().Equals(user.Id.ToString()))
+        User? loggedInUser = await userRepository.GetByIdAsync(Guid.Parse(loggedInUserId));
+        if (loggedInUser is null || (!loggedInUser.IsAdminUser && loggedInUser.Id != user.Id))
         {
-            logger.LogWarning("Could not update User {UserId}", loggedInUserId);
+            logger.LogWarning("Unauthorized update attempt by user {UserId}", loggedInUserId);
             return null;
         }
         
@@ -87,38 +87,31 @@ public class UserService
 
         if (updatedUser is null)
         {
-            logger.LogWarning("Did not update user {UserId}", id);
+            logger.LogWarning("Did not update user {UserId}", user.Id);
             return null;
         }
         
         logger.LogDebug("User {UserId} updated", updatedUser.Id);
-        return userMapper.MapToDTO(updatedUser);
+        return userMapper.MapToResponse(updatedUser);
     }
     
     // Delete
+
     public async Task<bool> DeleteByIdAsync(Guid id)
     {
         string? loggedInUserId = httpContextAccessor.HttpContext?.Items["UserId"] as string;
-
-        User? loggedInUser =
-            (await userRepository.FindAsync(user => user.Id.ToString() == loggedInUserId)).FirstOrDefault();
-
         if (loggedInUserId is null)
         {
             logger.LogWarning("User {UserId} not found", loggedInUserId);
             return false;
         }
+        
+        User? loggedInUser = await userRepository.GetByIdAsync(Guid.Parse(loggedInUserId));
 
-        if (!id.ToString().Equals(loggedInUser!.Id.ToString()))
+        if (loggedInUser is null || (!loggedInUser.IsAdminUser && loggedInUser.Id != id))
         {
             logger.LogWarning("Could not delete User {UserId}", loggedInUserId);
             return false;
-        }
-
-        if (loggedInUser.IsAdminUser)
-        {
-            await userRepository.DeleteByIdAsync(id);
-            return true;
         }
         
         logger.LogDebug("Deleting user {UserId}", loggedInUserId);
@@ -126,7 +119,7 @@ public class UserService
 
         if (deletedUser is null)
         {
-            logger.LogWarning("Did not delete user {UserId}", id);
+            logger.LogWarning("Failed to delete user {UserId}", id);
             return false;
         }
         
@@ -143,13 +136,15 @@ public class UserService
         
         return modelResponse is null
             ? null
-            : userMapper.MapToDTO(modelResponse);
+            : userMapper.MapToResponse(modelResponse);
     }
     
     public async Task<Guid> AuthenticateUserAsync(string userName, string password)
     {
         Expression<Func<User, bool>> expression = user => user.UserName == userName;
+        
         User? user = (await userRepository.FindAsync(expression)).FirstOrDefault();
+        
         if (user is null)
             return Guid.Empty;
 
@@ -169,6 +164,6 @@ public class UserService
         
         IEnumerable<User> users = await userRepository.FindAsync(predicate);
         
-        return users.Select(userMapper.MapToDTO);
+        return users.Select(userMapper.MapToResponse);
     }
 }

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using StudentBlogAPI.Auth;
 using StudentBlogAPI.Features.Users.Interfaces;
@@ -24,13 +25,13 @@ public class BasicAuthentication : IMiddleware
             .Select(pattern => new Regex(pattern)).ToList();
     }
 
-    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
     {
-        string authenticationHeader = context.Request.Headers.Authorization.ToString();
+        string authenticationHeader = httpContext.Request.Headers.Authorization.ToString();
 
-        if (_excludePatterns.Any(excludePattern => excludePattern.IsMatch(context.Request.Path)))
+        if (_excludePatterns.Any(excludePattern => excludePattern.IsMatch(httpContext.Request.Path)))
         {
-            await next(context);
+            await next(httpContext);
             return;
         }
         
@@ -39,20 +40,26 @@ public class BasicAuthentication : IMiddleware
         if (string.IsNullOrWhiteSpace(authenticationHeader))
         {
             _logger.LogWarning("Authentication header is missing.");
-            throw new UnauthorizedAccessException("Authentication header is missing.");
+            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await httpContext.Response.WriteAsync("Authentication header is missing.");
+            return;
         }
 
         if (!authenticationHeader.StartsWith("Basic", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogWarning("Authentication header is invalid.");
-            throw new UnauthorizedAccessException("Authentication header is invalid.");
+            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await httpContext.Response.WriteAsync("Authentication header is invalid.");
+            return;
         }
 
         SplitString(authenticationHeader, " ", out string basic, out string base64String);
         if (string.IsNullOrWhiteSpace(base64String) || string.IsNullOrWhiteSpace(basic))
         {
             _logger.LogWarning("Authentication header is empty");
-            throw new UnauthorizedAccessException("Authentication header is empty.");
+            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await httpContext.Response.WriteAsync("Authentication header is empty");
+            return;
         }
         
         
@@ -66,39 +73,42 @@ public class BasicAuthentication : IMiddleware
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             {
                 _logger.LogWarning("Missing username and/or password.");
-                throw new UnauthorizedAccessException("Missing username and/or password.");
+                httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await httpContext.Response.WriteAsync("Missing username and/or password.");
+                return;
             }
         }
-        catch (Exception e)
+        catch (FormatException)
         {
-            _logger.LogWarning(e, "Authentication header is invalid.");
-            throw new UnauthorizedAccessException("Authentication header is invalid.", e);
+            _logger.LogWarning("Authentication header is invalid.");
+            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await httpContext.Response.WriteAsync("Authentication header is invalid.");
+            return;
         }
 
-        
         
         Guid userId = await _userService.AuthenticateUserAsync(userName, password);
         if (userId == Guid.Empty)
         {
             _logger.LogWarning("Username or password is incorrect");
-            throw new UnauthorizedAccessException("Username or password is incorrect.");
+            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await httpContext.Response.WriteAsync("Username or password is incorrect");
+            return;
         }
         
-        context.Items["UserId"] = userId.ToString();
+        httpContext.Items["UserId"] = userId.ToString();
         
         // Next middleware
-        await next(context);
+        await next(httpContext);
     }
 
-    private string ExtractBase64String(string base64String)
+    private static string ExtractBase64String(string base64String)
     {
         byte[] base64Bytes = Convert.FromBase64String(base64String);
-        string userNamePassword = Encoding.UTF8.GetString(base64Bytes);
-        
-        return userNamePassword;
+        return Encoding.UTF8.GetString(base64Bytes);
     }
 
-    private void SplitString(string authenticationHeader, string separator, out string left, out string right)
+    private static void SplitString(string authenticationHeader, string separator, out string left, out string right)
     {
         left = right = string.Empty;
         string[] array = authenticationHeader.Split(separator);

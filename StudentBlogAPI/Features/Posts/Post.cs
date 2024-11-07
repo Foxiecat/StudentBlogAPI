@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using StudentBlogAPI.Features.Comments;
-using StudentBlogAPI.Features.Comments.Models;
 using StudentBlogAPI.Features.Users;
 
 namespace StudentBlogAPI.Features.Posts;

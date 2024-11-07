@@ -1,11 +1,11 @@
-using StudentBlogAPI.Common.Interfaces;
+using StudentBlogAPI.Features.Common.Interfaces;
 using StudentBlogAPI.Features.Posts.DTOs;
 
 namespace StudentBlogAPI.Features.Posts.Mappers;
 
 public class PostMapper : IMapper<Post, PostResponse>
 {
-    public PostResponse MapToDTO(Post post)
+    public PostResponse MapToResponse(Post post)
     {
         return new PostResponse
         {

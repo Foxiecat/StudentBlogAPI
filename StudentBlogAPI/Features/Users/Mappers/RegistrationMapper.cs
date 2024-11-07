@@ -1,11 +1,11 @@
-using StudentBlogAPI.Common.Interfaces;
+using StudentBlogAPI.Features.Common.Interfaces;
 using StudentBlogAPI.Features.Users.DTOs;
 
 namespace StudentBlogAPI.Features.Users.Mappers;
 
 public class RegistrationMapper : IMapper<User, UserRequest>
 {
-    public UserRequest MapToDTO(User model)
+    public UserRequest MapToResponse(User model)
     {
         return new UserRequest
         {

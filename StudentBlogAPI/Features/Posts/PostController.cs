@@ -22,17 +22,17 @@ public class PostController(ILogger<PostController> logger, IPostService postSer
     [HttpGet("{id:Guid}", Name = "GetPostByIdAsync")]
     public async Task<ActionResult> GetPostByIdAsync(Guid id)
     {
-        PostResponse? postDTO = await postService.GetByIdAsync(id);
+        PostResponse? postResponse = await postService.GetByIdAsync(id);
         
-        return postDTO is null
+        return postResponse is null
             ? BadRequest($"Failed to get post with id: {id}")
-            : Ok(postDTO);
+            : Ok(postResponse);
     }
 
     
     [HttpGet(Name = "GetPostsAsync")]
-    public async Task<ActionResult> GetPostsAsync([FromQuery] int pageNumber = 1,
-                                                     [FromQuery] int pageSize = 10)
+    public async Task<ActionResult> GetPostsAsync([FromQuery] int pageNumber = 1, 
+                                                  [FromQuery] int pageSize = 10)
     {
         IEnumerable<PostResponse> postDTOs = await postService.GetPagedAsync(pageNumber, pageSize);
         
@@ -42,17 +42,17 @@ public class PostController(ILogger<PostController> logger, IPostService postSer
     
     [HttpPut("{postId:Guid}", Name = "UpdatePostAsync")]
     public async Task<ActionResult> UpdatePostAsync(Guid postId,
-                                                    [FromBody] PostRequest updatePostBody)
+                                                    [FromBody] PostRequest postRequest)
     {
-        PostResponse? postDTO = await postService.GetByIdAsync(postId);
+        PostResponse? postResponse = await postService.GetByIdAsync(postId);
         
-        if (postDTO is null)
+        if (postResponse is null)
             return NotFound($"Failed to find post with id: {postId}");
         
-        postDTO.Title = updatePostBody.Title;
-        postDTO.Content = updatePostBody.Content;
+        postResponse.Title = postRequest.Title;
+        postResponse.Content = postRequest.Content;
         
-        PostResponse? updatedPost = await postService.UpdateAsync(postDTO);
+        PostResponse? updatedPost = await postService.UpdateAsync(postResponse);
 
         return Ok(updatedPost);
     }

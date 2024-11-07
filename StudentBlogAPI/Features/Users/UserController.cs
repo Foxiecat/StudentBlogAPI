@@ -46,7 +46,7 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
         UserResponse? userDTO = await userService.GetByIdAsync(id);
         
         return userDTO is null
-            ? BadRequest("User not found")
+            ? NotFound("User not found")
             : Ok(userDTO);
     }
 
@@ -63,10 +63,10 @@ public class UserController(ILogger<UserController> logger, IUserService userSer
     
     [HttpPut("{id:guid}", Name = "UpdateUserAsync")]
     public async Task<ActionResult> UpdateUserAsync(Guid id, 
-                                                    [FromQuery] UserUpdateRequest? updatedDetails)
+                                                    [FromBody] UserUpdateRequest? updatedDetails)
     {
         if (updatedDetails is null)
-            return NotFound("Please provide updated details");
+            return BadRequest("Please provide updated details");
         
         UserResponse? userDTO = await userService.GetByIdAsync(id);
         

@@ -5,12 +5,11 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <UserSecretsId>6a0032fa-a814-4b96-a3a0-b944d816fbe0</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-        <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
@@ -33,8 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Data\Migrations\" />
-      <Folder Include="Features\Users\Extras\" />
+      <Folder Include="Database\Migrations\" />
       <Folder Include="Logs\" />
     </ItemGroup>
 

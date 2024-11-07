@@ -1,6 +1,8 @@
-using StudentBlogAPI.Common.Interfaces;
-using StudentBlogAPI.Features.Comments.Models;
+using StudentBlogAPI.Features.Common.Interfaces;
 
 namespace StudentBlogAPI.Features.Comments.Interfaces;
 
-public interface ICommentRepository : IRepository<Comment>;
+public interface ICommentRepository : IRepository<Comment>
+{
+    public Task<IEnumerable<Comment>> GetAllFromPostIdAsync(Guid id);
+}
